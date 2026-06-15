@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Controle de Revendedora Pro</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+:root{
+  --rose:#880E4F;--rose2:#AD1457;--rose3:#F48FB1;--pink:#FCE4EC;
+  --green:#1B5E20;--green2:#2E7D32;--red:#C62828;--amber:#F57F17;
+  --dark:#1A0010;--white:#FFFFFF;--gray:#6B7280;--border:#E5E7EB;--bg:#FFF0F5;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:#1A1A1A;min-height:100vh;}
+
+.hero{background:linear-gradient(150deg,var(--dark) 0%,var(--rose) 100%);padding:28px 20px 24px;color:white;position:relative;overflow:hidden;}
+.hero::after{content:'💄';position:absolute;right:10px;top:10px;font-size:80px;opacity:0.12;}
+.badge{display:inline-block;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:4px 12px;border-radius:20px;margin-bottom:10px;}
+.hero h1{font-size:26px;font-weight:800;line-height:1.2;margin-bottom:4px;}
+.hero h1 span{color:var(--rose3);}
+.hero p{font-size:13px;color:rgba(255,255,255,0.75);}
+
+.kpi-bar{background:white;padding:14px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+.kpi-row{display:flex;gap:0;overflow-x:auto;scrollbar-width:none;}
+.kpi-row::-webkit-scrollbar{display:none;}
+.kpi{flex:1;text-align:center;padding:0 8px;border-right:1px solid var(--border);min-width:70px;}
+.kpi:last-child{border-right:none;}
+.kpi-val{font-size:16px;font-weight:800;color:var(--rose2);white-space:nowrap;}
+.kpi-label{font-size:10px;color:var(--gray);margin-top:1px;}
+
+.container{max-width:560px;margin:0 auto;padding:16px;}
+.tabs{display:flex;background:white;border-radius:12px;border:1px solid var(--border);overflow:hidden;margin-bottom:16px;}
+.tab{flex:1;padding:11px 4px;text-align:center;font-size:11px;font-weight:600;color:var(--gray);cursor:pointer;border:none;background:none;font-family:'Inter',sans-serif;}
+.tab.active{background:var(--rose2);color:white;}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+.card{background:white;border-radius:14px;border:1px solid var(--border);padding:16px;margin-bottom:12px;}
+.card-title{font-size:14px;font-weight:700;color:var(--rose);margin-bottom:12px;}
+input,select,textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;color:#1A1A1A;font-family:'Inter',sans-serif;-webkit-appearance:none;background:white;}
+input:focus,select:focus{outline:none;border-color:var(--rose2);}
+.label{font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;display:block;margin-bottom:5px;}
+.field-group{margin-bottom:10px;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.field-row3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;}
+.btn-add{width:100%;padding:12px;background:linear-gradient(135deg,var(--rose),var(--rose2));color:white;border:none;border-radius:10px;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;}
+
+/* CLIENTE CARD */
+.cli-card{background:var(--pink);border-radius:12px;border:1px solid #F8BBD0;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;}
+.cli-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--rose),var(--rose2));color:white;font-size:16px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.cli-info{flex:1;}
+.cli-name{font-size:14px;font-weight:700;}
+.cli-detail{font-size:11px;color:var(--gray);margin-top:2px;}
+.cli-saldo{font-size:13px;font-weight:800;}
+.cli-saldo.positivo{color:var(--red);}
+.cli-saldo.quitado{color:var(--green2);}
+.cli-actions{display:flex;gap:6px;}
+.btn-mini{padding:5px 10px;border-radius:8px;font-family:'Inter',sans-serif;font-size:11px;font-weight:700;cursor:pointer;border:none;}
+.btn-pagar{background:var(--green2);color:white;}
+.btn-ver{background:var(--rose2);color:white;}
+.btn-remove{background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;}
+
+/* PEDIDO */
+.ped-card{background:white;border-radius:12px;border:1px solid var(--border);padding:12px 14px;margin-bottom:8px;}
+.ped-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.ped-cliente{font-size:14px;font-weight:700;color:var(--rose);}
+.ped-status{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;}
+.ped-status.pendente{background:#FFF3E0;color:var(--amber);}
+.ped-status.pago{background:#E8F5E9;color:var(--green2);}
+.ped-status.entregue{background:#E3F2FD;color:#1565C0;}
+.ped-detail{font-size:12px;color:var(--gray);margin-bottom:4px;}
+.ped-footer{display:flex;justify-content:space-between;align-items:center;}
+.ped-valor{font-size:15px;font-weight:800;color:var(--rose);}
+.ped-comissao{font-size:11px;color:var(--green2);font-weight:600;}
+
+/* RESUMO FINANCEIRO */
+.fin-card{border-radius:14px;padding:18px;color:white;text-align:center;margin-bottom:12px;}
+.fin-val{font-size:36px;font-weight:800;line-height:1;}
+.fin-label{font-size:12px;opacity:0.8;margin-top:4px;}
+.fin-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.fin-item{background:white;border-radius:12px;padding:14px;border:1px solid var(--border);text-align:center;}
+.fin-item-val{font-size:20px;font-weight:800;color:var(--rose2);}
+.fin-item-label{font-size:11px;color:var(--gray);margin-top:3px;}
+
+/* INADIMPLÊNCIA */
+.inad-item{background:white;border-radius:12px;border:1px solid var(--border);padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+.inad-name{font-size:14px;font-weight:700;}
+.inad-ciclo{font-size:11px;color:var(--gray);}
+.inad-val{font-size:16px;font-weight:800;color:var(--red);}
+.btn-cobrar{padding:8px 14px;background:var(--rose2);color:white;border:none;border-radius:8px;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;cursor:pointer;}
+
+.dica{background:var(--pink);border-left:3px solid var(--rose2);border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;color:var(--rose);margin-bottom:12px;line-height:1.5;}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--rose2);color:white;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;transition:transform 0.3s;z-index:300;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.empty{text-align:center;padding:30px;color:var(--gray);}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="badge">💄 Produto Premium</div>
+  <h1>Controle de<br><span>Revendedora Pro</span></h1>
+  <p>Clientes, pedidos, comissões e inadimplência numa só ferramenta.</p>
+</div>
+
+<div class="kpi-bar">
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-val" id="kpi-faturamento">R$0</div><div class="kpi-label">Faturamento</div></div>
+    <div class="kpi"><div class="kpi-val" id="kpi-comissao">R$0</div><div class="kpi-label">Comissão</div></div>
+    <div class="kpi"><div class="kpi-val" id="kpi-inadimplente">R$0</div><div class="kpi-label">A receber</div></div>
+    <div class="kpi"><div class="kpi-val" id="kpi-clientes">0</div><div class="kpi-label">Clientes</div></div>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('clientes')">👥 Clientes</button>
+    <button class="tab" onclick="switchTab('pedidos')">📦 Pedidos</button>
+    <button class="tab" onclick="switchTab('financeiro')">💰 Financeiro</button>
+    <button class="tab" onclick="switchTab('cobrar')">⚠️ Cobrar</button>
+  </div>
+
+  <!-- CLIENTES -->
+  <div class="tab-content active" id="tab-clientes">
+    <div class="card">
+      <div class="card-title">👤 Cadastrar Cliente</div>
+      <div class="field-row">
+        <div class="field-group"><label class="label">Nome</label><input type="text" id="cl-nome" placeholder="Nome da cliente"></div>
+        <div class="field-group"><label class="label">WhatsApp</label><input type="tel" id="cl-fone" placeholder="(11) 99999-0000"></div>
+      </div>
+      <div class="field-row">
+        <div class="field-group"><label class="label">Bairro / Referência</label><input type="text" id="cl-end" placeholder="Bairro ou ponto de referência"></div>
+        <div class="field-group"><label class="label">Marca preferida</label>
+          <select id="cl-marca">
+            <option>Avon</option><option>Natura</option><option>Mary Kay</option>
+            <option>Boticário</option><option>Jequiti</option><option>Diversas</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-add" onclick="addCliente()">+ Cadastrar Cliente</button>
+    </div>
+    <div id="clientes-list"><div class="empty"><div style="font-size:36px">👥</div><p>Nenhuma cliente cadastrada ainda.</p></div></div>
+  </div>
+
+  <!-- PEDIDOS -->
+  <div class="tab-content" id="tab-pedidos">
+    <div class="card">
+      <div class="card-title">📦 Registrar Pedido</div>
+      <div class="field-group"><label class="label">Cliente</label>
+        <select id="ped-cliente" id="ped-cliente"><option value="">Selecione a cliente...</option></select>
+      </div>
+      <div class="field-row">
+        <div class="field-group"><label class="label">Marca</label>
+          <select id="ped-marca"><option>Avon</option><option>Natura</option><option>Mary Kay</option><option>Boticário</option><option>Jequiti</option><option>Outras</option></select>
+        </div>
+        <div class="field-group"><label class="label">Ciclo / Campanha</label><input type="text" id="ped-ciclo" placeholder="C01/2026"></div>
+      </div>
+      <div class="field-row">
+        <div class="field-group"><label class="label">Valor do Pedido R$</label><input type="number" id="ped-valor" placeholder="0,00" step="0.01"></div>
+        <div class="field-group"><label class="label">% Comissão</label><input type="number" id="ped-comissao" placeholder="30" value="30"></div>
+      </div>
+      <div class="field-group"><label class="label">Descrição</label><input type="text" id="ped-desc" placeholder="Perfume, creme, batom..."></div>
+      <div class="field-group"><label class="label">Status</label>
+        <select id="ped-status"><option value="pendente">⏳ Pendente</option><option value="entregue">📦 Entregue</option><option value="pago">✅ Pago</option></select>
+      </div>
+      <button class="btn-add" onclick="addPedido()">+ Registrar Pedido</button>
+    </div>
+    <div id="pedidos-list"><div class="empty"><div style="font-size:36px">📦</div><p>Nenhum pedido registrado.</p></div></div>
+  </div>
+
+  <!-- FINANCEIRO -->
+  <div class="tab-content" id="tab-financeiro">
+    <div class="fin-card" style="background:linear-gradient(135deg,var(--rose),var(--rose2));">
+      <div class="fin-val" id="fin-faturamento">R$ 0,00</div>
+      <div class="fin-label">Total Faturado (todos os pedidos)</div>
+    </div>
+    <div class="fin-grid">
+      <div class="fin-item"><div class="fin-item-val" id="fin-comissao">R$ 0,00</div><div class="fin-item-label">💰 Sua Comissão</div></div>
+      <div class="fin-item"><div class="fin-item-val" id="fin-receber" style="color:var(--red)">R$ 0,00</div><div class="fin-item-label">⚠️ A Receber</div></div>
+      <div class="fin-item"><div class="fin-item-val" id="fin-recebido" style="color:var(--green2)">R$ 0,00</div><div class="fin-item-label">✅ Recebido</div></div>
+      <div class="fin-item"><div class="fin-item-val" id="fin-pedidos">0</div><div class="fin-item-label">📦 Total Pedidos</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📊 Por Marca</div>
+      <div id="fin-marcas"></div>
+    </div>
+  </div>
+
+  <!-- COBRAR -->
+  <div class="tab-content" id="tab-cobrar">
+    <div class="dica">
+      💡 Aqui ficam todas as clientes com pedidos <strong>pendentes ou entregues mas não pagos</strong>. Toque em "Cobrar" para enviar mensagem pelo WhatsApp.
+    </div>
+    <div id="cobrar-list"><div class="empty"><div style="font-size:36px">🎉</div><p>Nenhuma cobrança pendente!</p></div></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let clientes = JSON.parse(localStorage.getItem('rev_clientes')||'[]');
+let pedidos = JSON.parse(localStorage.getItem('rev_pedidos')||'[]');
+
+function salvar(){
+  localStorage.setItem('rev_clientes',JSON.stringify(clientes));
+  localStorage.setItem('rev_pedidos',JSON.stringify(pedidos));
+}
+
+function addCliente(){
+  const nome=document.getElementById('cl-nome').value.trim();
+  if(!nome){showToast('Digite o nome da cliente!');return;}
+  clientes.push({id:Date.now(),nome,fone:document.getElementById('cl-fone').value,end:document.getElementById('cl-end').value,marca:document.getElementById('cl-marca').value});
+  document.getElementById('cl-nome').value='';document.getElementById('cl-fone').value='';
+  salvar();renderClientes();renderSelectClientes();atualizarKPIs();
+  showToast('✓ Cliente cadastrada!');
+}
+
+function addPedido(){
+  const cid=document.getElementById('ped-cliente').value;
+  const val=parseFloat(document.getElementById('ped-valor').value);
+  if(!cid){showToast('Selecione a cliente!');return;}
+  if(!val){showToast('Digite o valor do pedido!');return;}
+  const com=parseFloat(document.getElementById('ped-comissao').value)||30;
+  pedidos.push({
+    id:Date.now(),clienteId:parseInt(cid),
+    marca:document.getElementById('ped-marca').value,
+    ciclo:document.getElementById('ped-ciclo').value,
+    valor:val,comissaoPct:com,comissaoVal:val*(com/100),
+    desc:document.getElementById('ped-desc').value,
+    status:document.getElementById('ped-status').value,
+    data:new Date().toLocaleDateString('pt-BR')
+  });
+  document.getElementById('ped-valor').value='';document.getElementById('ped-desc').value='';
+  salvar();renderPedidos();atualizarKPIs();renderFinanceiro();renderCobrar();
+  showToast('✓ Pedido registrado!');
+}
+
+function renderClientes(){
+  const list=document.getElementById('clientes-list');
+  if(!clientes.length){list.innerHTML='<div class="empty"><div style="font-size:36px">👥</div><p>Nenhuma cliente cadastrada.</p></div>';return;}
+  list.innerHTML=clientes.map(c=>{
+    const peds=pedidos.filter(p=>p.clienteId===c.id);
+    const saldo=peds.filter(p=>p.status!=='pago').reduce((s,p)=>s+p.valor,0);
+    return `<div class="cli-card">
+      <div class="cli-avatar">${c.nome.charAt(0).toUpperCase()}</div>
+      <div class="cli-info">
+        <div class="cli-name">${c.nome}</div>
+        <div class="cli-detail">${c.marca} • ${c.end||'Sem endereço'} • ${peds.length} pedido(s)</div>
+      </div>
+      <div style="text-align:right;margin-right:6px;">
+        <div class="cli-saldo ${saldo>0?'positivo':'quitado'}">${saldo>0?'R$ '+saldo.toFixed(2).replace('.',','):'✅ Quitada'}</div>
+      </div>
+      ${c.fone?`<button class="btn-mini btn-pagar" onclick="cobrarWhats(${c.id})">📲</button>`:''}
+      <button class="btn-remove" onclick="removeCliente(${c.id})">×</button>
+    </div>`;}).join('');
+}
+
+function removeCliente(id){
+  if(!confirm('Remover cliente?')) return;
+  clientes=clientes.filter(c=>c.id!==id);
+  pedidos=pedidos.filter(p=>p.clienteId!==id);
+  salvar();renderClientes();renderSelectClientes();renderPedidos();atualizarKPIs();
+}
+
+function renderSelectClientes(){
+  const sel=document.getElementById('ped-cliente');
+  sel.innerHTML='<option value="">Selecione a cliente...</option>'+
+    clientes.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
+}
+
+function renderPedidos(){
+  const list=document.getElementById('pedidos-list');
+  if(!pedidos.length){list.innerHTML='<div class="empty"><div style="font-size:36px">📦</div><p>Nenhum pedido registrado.</p></div>';return;}
+  const sorted=[...pedidos].reverse();
+  list.innerHTML=sorted.map(p=>{
+    const cli=clientes.find(c=>c.id===p.clienteId);
+    return `<div class="ped-card">
+      <div class="ped-header">
+        <span class="ped-cliente">${cli?.nome||'Cliente'}</span>
+        <span class="ped-status ${p.status}">${p.status==='pendente'?'⏳ Pendente':p.status==='entregue'?'📦 Entregue':'✅ Pago'}</span>
+      </div>
+      <div class="ped-detail">${p.marca} ${p.ciclo?'• '+p.ciclo:''} ${p.data?'• '+p.data:''}</div>
+      ${p.desc?`<div class="ped-detail">${p.desc}</div>`:''}
+      <div class="ped-footer">
+        <span class="ped-valor">R$ ${p.valor.toFixed(2).replace('.',',')}</span>
+        <span class="ped-comissao">💰 Comissão: R$ ${p.comissaoVal.toFixed(2).replace('.',',')}</span>
+        <div style="display:flex;gap:4px;">
+          ${p.status!=='pago'?`<button class="btn-mini btn-pagar" onclick="marcarPago(${p.id})">✓ Pago</button>`:''}
+          <button class="btn-remove" onclick="removePedido(${p.id})">×</button>
+        </div>
+      </div>
+    </div>`;}).join('');
+}
+
+function marcarPago(id){
+  const p=pedidos.find(x=>x.id===id);
+  if(p){p.status='pago';salvar();renderPedidos();renderClientes();atualizarKPIs();renderFinanceiro();renderCobrar();showToast('✅ Marcado como pago!');}
+}
+function removePedido(id){pedidos=pedidos.filter(x=>x.id!==id);salvar();renderPedidos();atualizarKPIs();renderFinanceiro();renderCobrar();}
+
+function atualizarKPIs(){
+  const fat=pedidos.reduce((s,p)=>s+p.valor,0);
+  const com=pedidos.reduce((s,p)=>s+p.comissaoVal,0);
+  const inad=pedidos.filter(p=>p.status!=='pago').reduce((s,p)=>s+p.valor,0);
+  document.getElementById('kpi-faturamento').textContent='R$'+Math.round(fat);
+  document.getElementById('kpi-comissao').textContent='R$'+Math.round(com);
+  document.getElementById('kpi-inadimplente').textContent='R$'+Math.round(inad);
+  document.getElementById('kpi-clientes').textContent=clientes.length;
+}
+
+function renderFinanceiro(){
+  const fat=pedidos.reduce((s,p)=>s+p.valor,0);
+  const com=pedidos.reduce((s,p)=>s+p.comissaoVal,0);
+  const receber=pedidos.filter(p=>p.status!=='pago').reduce((s,p)=>s+p.valor,0);
+  const recebido=pedidos.filter(p=>p.status==='pago').reduce((s,p)=>s+p.valor,0);
+  document.getElementById('fin-faturamento').textContent='R$ '+fat.toFixed(2).replace('.',',');
+  document.getElementById('fin-comissao').textContent='R$ '+com.toFixed(2).replace('.',',');
+  document.getElementById('fin-receber').textContent='R$ '+receber.toFixed(2).replace('.',',');
+  document.getElementById('fin-recebido').textContent='R$ '+recebido.toFixed(2).replace('.',',');
+  document.getElementById('fin-pedidos').textContent=pedidos.length;
+
+  const marcas={};
+  pedidos.forEach(p=>{
+    if(!marcas[p.marca]) marcas[p.marca]={fat:0,com:0,qtd:0};
+    marcas[p.marca].fat+=p.valor;
+    marcas[p.marca].com+=p.comissaoVal;
+    marcas[p.marca].qtd++;
+  });
+  document.getElementById('fin-marcas').innerHTML=Object.entries(marcas).length?
+    Object.entries(marcas).sort((a,b)=>b[1].fat-a[1].fat).map(([m,v])=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+        <div><div style="font-size:13px;font-weight:700;">${m}</div><div style="font-size:11px;color:var(--gray)">${v.qtd} pedido(s)</div></div>
+        <div style="text-align:right;"><div style="font-size:14px;font-weight:800;color:var(--rose2)">R$ ${v.fat.toFixed(2).replace('.',',')}</div><div style="font-size:11px;color:var(--green2)">Comissão: R$ ${v.com.toFixed(2).replace('.',',')}</div></div>
+      </div>`).join(''):'<p style="font-size:13px;color:var(--gray);text-align:center;padding:16px">Nenhum pedido ainda.</p>';
+}
+
+function renderCobrar(){
+  const list=document.getElementById('cobrar-list');
+  const pendentes=pedidos.filter(p=>p.status!=='pago');
+  if(!pendentes.length){list.innerHTML='<div class="empty"><div style="font-size:36px">🎉</div><p>Nenhuma cobrança pendente!</p></div>';return;}
+  const porCliente={};
+  pendentes.forEach(p=>{
+    if(!porCliente[p.clienteId]) porCliente[p.clienteId]={total:0,pedidos:[],ciclos:[]};
+    porCliente[p.clienteId].total+=p.valor;
+    porCliente[p.clienteId].pedidos.push(p);
+    if(p.ciclo) porCliente[p.clienteId].ciclos.push(p.ciclo);
+  });
+  list.innerHTML=Object.entries(porCliente).map(([cid,data])=>{
+    const cli=clientes.find(c=>c.id===parseInt(cid));
+    return `<div class="inad-item">
+      <div>
+        <div class="inad-name">${cli?.nome||'Cliente'}</div>
+        <div class="inad-ciclo">${data.pedidos.length} pedido(s) ${data.ciclos.length?'• '+data.ciclos.join(', '):''}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="inad-val">R$ ${data.total.toFixed(2).replace('.',',')}</div>
+        ${cli?.fone?`<button class="btn-cobrar" onclick="cobrarWhats(${cid})">📲 Cobrar</button>`:''}
+      </div>
+    </div>`;}).join('');
+}
+
+function cobrarWhats(cid){
+  const cli=clientes.find(c=>c.id===parseInt(cid));
+  if(!cli?.fone){showToast('Cliente sem telefone cadastrado!');return;}
+  const pends=pedidos.filter(p=>p.clienteId===parseInt(cid)&&p.status!=='pago');
+  const total=pends.reduce((s,p)=>s+p.valor,0);
+  let msg=`Olá, ${cli.nome}! 😊\n\nPassando para confirmar seus pedidos em aberto:\n\n`;
+  pends.forEach(p=>{msg+=`📦 ${p.marca} ${p.ciclo?p.ciclo:''}: R$ ${p.valor.toFixed(2).replace('.',',')}\n`;});
+  msg+=`\n💰 *Total: R$ ${total.toFixed(2).replace('.',',')}*\n\nQuando podemos combinar o pagamento? 🙏`;
+  const fone=cli.fone.replace(/\D/g,'');
+  window.open(`https://wa.me/55${fone}?text=${encodeURIComponent(msg)}`);
+}
+
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['clientes','pedidos','financeiro','cobrar'][i]===t));
+  document.querySelectorAll('.tab-content').forEach((el,i)=>el.classList.toggle('active',['tab-clientes','tab-pedidos','tab-financeiro','tab-cobrar'][i]==='tab-'+t));
+  if(t==='financeiro') renderFinanceiro();
+  if(t==='cobrar') renderCobrar();
+}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+
+// Init
+renderClientes();renderSelectClientes();renderPedidos();atualizarKPIs();renderFinanceiro();renderCobrar();
+</script>
+</body>
+</html>
